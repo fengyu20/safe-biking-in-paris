@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+
+  infra:
+    build:
+      context: ./infra
+    volumes:
+      - ./infra:/infra
+      - ./credentials.json:/infra/credentials.json
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/infra/credentials.json
+    working_dir: /infra
+
+  ingestion:
+    build:
+      context: ./ingestion
+      dockerfile: Dockerfile
+    volumes:
+      - ./ingestion:/app
+      - ~/.config/gcloud:/root/.config/gcloud:ro
+      - ./credentials.json:/app/credentials.json
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+      - BUCKET=biking-in-paris-bucket        
+      - PREFIX=raw
+      - MANIFEST_PATH=ingest_manifest.yaml
+    depends_on:
+      - infra
+
+  dbt:
+    build:
+      context: ./transformation
+      dockerfile: Dockerfile
+    volumes:
+      - ./transformation:/app
+      - ./credentials.json:/app/credentials.json
+    environment:
+      - DBT_PROFILES_DIR=/app
+      - DBT_TARGET=dev
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+      - RAW_BUCKET=biking-in-paris-bucket
+      - RAW_PREFIX=raw
+    depends_on:
+      - ingestion
+
+  ml:
+    build:
+      context: ./machine_learning
+      dockerfile: Dockerfile
+    volumes:
+      - ./machine_learning:/app
+      - ./credentials.json:/app/credentials.json
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+      - PYTHONPATH=/app
+    depends_on:
+      - dbt

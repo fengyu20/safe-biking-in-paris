@@ -1,0 +1,243 @@
+version: 2
+
+sources:
+  - name: raw_caract
+    database: biking-in-paris
+    schema: accidents
+    tables:
+      - name: raw_caract_all
+        external:
+          location: "gs://biking-in-paris-bucket/data/raw/*/caract.csv"
+          options:
+            format: csv
+            skip_leading_rows: 1
+            field_delimiter: ';'
+            null_marker: 'N/A'
+            allow_quoted_newlines: true
+            allow_jagged_rows: true
+        columns:
+          - name: Num_Acc
+            description: "Accident identifier number"
+            data_type: STRING
+          - name: jour
+            description: "Day of the accident"
+            data_type: STRING
+          - name: mois
+            description: "Month of the accident"
+            data_type: STRING
+          - name: an
+            description: "Year of the accident"
+            data_type: STRING
+          - name: hrmn
+            description: "Time of the accident (HHMM)"
+            data_type: STRING
+          - name: lum
+            description: "Lighting condition (1=daylight; 2=dawn/dusk; 3=night without public lighting; 4=night with public lighting off; 5=night with public lighting on)"
+            data_type: STRING
+          - name: dep
+            description: "INSEE department code (e.g. 2A, 2B)"
+            data_type: STRING
+          - name: com
+            description: "INSEE commune code"
+            data_type: STRING
+          - name: agg
+            description: "Location relative to urban area (1=outside; 2=inside)"
+            data_type: STRING
+          - name: int
+            description: "Intersection type (1=none; 2=X; 3=T; 4=Y; 5=>4 branches; 6=roundabout; 7=square; 8=level crossing; 9=other)"
+            data_type: STRING
+          - name: atm
+            description: "Weather condition (–1=unknown; 1=normal; 2=light rain; 3=heavy rain; 4=snow/hail; 5=fog/smoke; 6=strong wind; 7=glare; 8=overcast; 9=other)"
+            data_type: STRING
+          - name: col
+            description: "Collision type (–1=unknown; 1=two-vehicle head-on; 2=rear-end; 3=side impact; 4=3+ vehicles chain; 5=3+ multiple; 6=other; 7=no collision)"
+            data_type: STRING
+          - name: adr
+            description: "Postal address (within urban area)"
+            data_type: STRING
+          - name: lat
+            description: "Latitude (WGS84)"
+            data_type: STRING
+          - name: long
+            description: "Longitude (WGS84)"
+            data_type: STRING
+
+  - name: raw_lieux
+    schema: accidents
+    tables:
+      - name: raw_lieux_all
+        external:
+          location: "gs://biking-in-paris-bucket/data/raw/*/lieux.csv"
+          options:
+            format: csv
+            skip_leading_rows: 1
+            field_delimiter: ';'
+            null_marker: 'N/A'
+            allow_quoted_newlines: true
+            allow_jagged_rows: true
+        columns:
+          - name: Num_Acc
+            description: "Accident identifier (matches raw_caract)"
+            data_type: STRING
+          - name: catr
+            description: "Road category (1=motorway; 2=national; 3=departmental; 4=communal; 5=off-network; 6=public parking area; 7=urban network; 9=other)"
+            data_type: STRING
+          - name: voie
+            description: "Route number"
+            data_type: STRING
+          - name: v1
+            description: "Numeric index of route (e.g. bis, ter)"
+            data_type: STRING
+          - name: v2
+            description: "Alphanumeric route suffix"
+            data_type: STRING
+          - name: circ
+            description: "Traffic regime (–1=unknown; 1=one-way; 2=two-way; 3=divided lanes; 4=variable lanes)"
+            data_type: STRING
+          - name: nbv
+            description: "Number of traffic lanes"
+            data_type: STRING
+          - name: vosp
+            description: "Dedicated lane type (–1=unknown; 0=N/A; 1=bike path; 2=bike lane; 3=reserved lane)"
+            data_type: STRING
+          - name: prof
+            description: "Longitudinal profile (–1=unknown; 1=flat; 2=uphill; 3=hill crest; 4=hill base)"
+            data_type: STRING
+          - name: pr
+            description: "Reference point number (–1=not specified)"
+            data_type: STRING
+          - name: pr1
+            description: "Distance in meters from reference point (–1=not specified)"
+            data_type: STRING
+          - name: plan
+            description: "Horizontal alignment (–1=unknown; 1=straight; 2=curve left; 3=curve right; 4=S-curve)"
+            data_type: STRING
+          - name: lartpc
+            description: "Median width (m)"
+            data_type: STRING
+          - name: larrout
+            description: "Carriageway width excluding hard shoulders and parking (m)"
+            data_type: STRING
+          - name: surf
+            description: "Surface condition (–1=unknown; 1=normal; 2=wet; 3=puddles; 4=flooded; 5=snow; 6=mud; 7=ice; 8=oil; 9=other)"
+            data_type: STRING
+          - name: infra
+            description: "Infrastructure (–1=unknown; 0=none; 1=tunnel; 2=bridge; 3=ramp; 4=rail crossing; 5=grade-separated junction; 6=pedestrian zone; 7=toll zone; 8=work zone; 9=other)"
+            data_type: STRING
+          - name: situ
+            description: "Accident location on roadway (–1=unknown; 0=none; 1=on carriageway; 2=on hard shoulder; 3=shoulder; 4=sidewalk; 5=bike path; 6=other special lane; 8=other)"
+            data_type: STRING
+          - name: vma
+            description: "Speed limit at time and location of accident (km/h)"
+            data_type: STRING
+
+  - name: raw_usagers
+    schema: accidents
+    tables:
+      - name: raw_usagers_all
+        external:
+          location: "gs://biking-in-paris-bucket/data/raw/*/usagers.csv"
+          options:
+            format: csv
+            skip_leading_rows: 1
+            field_delimiter: ';'
+            null_marker: 'N/A'
+            allow_quoted_newlines: true
+            allow_jagged_rows: true
+        columns:
+          - name: Num_Acc
+            description: "Accident identifier (matches raw_caract)"
+            data_type: STRING
+          - name: id_usager
+            description: "User identifier (numeric)"
+            data_type: STRING
+          - name: id_vehicule
+            description: "Vehicle identifier (numeric)"
+            data_type: STRING
+          - name: num_veh
+            description: "Vehicle code (alphanumeric)"
+            data_type: STRING
+          - name: place
+            description: "Seating position or pedestrian (10)"
+            data_type: STRING
+          - name: catu
+            description: "User category (1=driver; 2=passenger; 3=pedestrian)"
+            data_type: STRING
+          - name: grav
+            description: "Injury severity (1=uninjured; 2=dead; 3=hospitalized; 4=light injury)"
+            data_type: STRING
+          - name: sexe
+            description: "Sex (1=male; 2=female)"
+            data_type: STRING
+          - name: an_nais
+            description: "Year of birth"
+            data_type: STRING
+          - name: trajet
+            description: "Trip purpose (–1/0=unknown; 1=home–work; 2=home–school; 3=shopping; 4=work use; 5=leisure; 9=other)"
+            data_type: STRING
+          - name: secu1
+            description: "Safety equipment used (–1=unknown; 0=none; 1=seatbelt; 2=helmet; 3=child device; 4=reflective vest; 5=airbag; 6=gloves; 7=gloves+airbag; 8=undeterminable; 9=other)"
+            data_type: STRING
+          - name: secu2
+            description: "Second safety equipment (same coding as secu1)"
+            data_type: STRING
+          - name: secu3
+            description: "Third safety equipment (same coding as secu1)"
+            data_type: STRING
+          - name: locp
+            description: "Pedestrian location (–1=unknown; 0=N/A; 1=>50 m from crossing; 2=<50 m; 3=unmarked crossing; 4=marked crossing; 5=sidewalk; 6=shoulder; 7=refuge; 8=service road; 9=unknown)"
+            data_type: STRING
+          - name: actp
+            description: "Pedestrian action (–1=unknown; 0=N/A; 1=with vehicle direction; 2=against; 3=crossing; 4=hidden; 5=playing; 6=with animal; 9=other; A=boarding/alighting; B=unknown)"
+            data_type: STRING
+          - name: etatp
+            description: "Pedestrian accompaniment (–1=unknown; 1=alone; 2=with others; 3=in group)"
+            data_type: STRING
+
+  - name: raw_vehicules
+    schema: accidents
+    tables:
+      - name: raw_vehicules_all
+        external:
+          location: "gs://biking-in-paris-bucket/data/raw/*/vehicules.csv"
+          options:
+            format: csv
+            skip_leading_rows: 1
+            field_delimiter: ';'
+            null_marker: 'N/A'
+            allow_quoted_newlines: true
+            allow_jagged_rows: true
+        columns:
+          - name: Num_Acc
+            description: "Accident identifier (matches raw_caract)"
+            data_type: STRING
+          - name: id_vehicule
+            description: "Vehicle identifier (numeric)"
+            data_type: STRING
+          - name: num_veh
+            description: "Vehicle code (alphanumeric)"
+            data_type: STRING
+          - name: senc
+            description: "Direction of travel (–1=unknown; 0=unknown; 1=increasing PK/PR; 2=decreasing; 3=no marker)"
+            data_type: STRING
+          - name: catv
+            description: "Vehicle category (00=indeterminable; 01=bicycle; 02=moped <50 cc; 03=quadricycle; …; 99=other)"
+            data_type: STRING
+          - name: obs
+            description: "Fixed obstacle hit (–1=unknown; 0=N/A; 1=parked vehicle; 2=tree; …; 17=driven off without obstacle)"
+            data_type: STRING
+          - name: obsm
+            description: "Mobile obstacle hit (–1=unknown; 0=none; 1=pedestrian; 2=vehicle; 4=rail vehicle; 5=domestic animal; 6=wild animal; 9=other)"
+            data_type: STRING
+          - name: choc
+            description: "Initial point of impact (–1=unknown; 0=none; 1=front; 2=front-right; …; 9=multiple/rollover)"
+            data_type: STRING
+          - name: manv
+            description: "Primary maneuver before accident (–1=unknown; 0=unknown; 1=no turn; …; 26=other)"
+            data_type: STRING
+          - name: motor
+            description: "Motor type (–1=unknown; 0=unknown; 1=hydrocarbon; 2=hybrid; 3=electric; 4=hydrogen; 5=human; 6=other)"
+            data_type: STRING
+          - name: occutc
+            description: "Number of occupants in public transport"
+            data_type: STRING

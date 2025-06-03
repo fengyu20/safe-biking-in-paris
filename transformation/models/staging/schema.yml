@@ -1,0 +1,384 @@
+version: 2
+
+models:
+    - name: stg_caract
+      description: "Characteristics of each accident: date, time, lighting, weather, collision, and location details."
+      columns:
+        - name: Num_Acc
+          description: "Accident identifier number."
+        - name: jour
+          description: "Day of the accident."
+        - name: mois
+          description: "Month of the accident."
+        - name: an
+          description: "Year of the accident."
+        - name: hrmn
+          description: "Hour and minutes of the accident."
+        - name: lum
+          description: >
+            Light conditions at time of accident:
+            1 = Daylight;
+            2 = Twilight or dawn;
+            3 = Night, no public lighting;
+            4 = Night, public lighting installed but off;
+            5 = Night, public lighting on.
+        - name: dep
+          description: "Department code (INSEE code, e.g. 2A = Corse-du-Sud)."
+        - name: com
+          description: "Municipality code (INSEE: department code + three digits)."
+        - name: agg
+          description: "Location: 1 = Outside urban area; 2 = Within urban area."
+        - name: int
+          description: >
+            Intersection type:
+            1 = Not at an intersection;
+            2 = Cross (“X”);
+            3 = T-intersection;
+            4 = Y-intersection;
+            5 = Intersection with >4 legs;
+            6 = Roundabout;
+            7 = Public square;
+            8 = Level crossing;
+            9 = Other.
+        - name: atm
+          description: >
+            Atmospheric conditions:
+            -1 = Not specified;
+            1 = Normal;
+            2 = Light rain;
+            3 = Heavy rain;
+            4 = Snow/hail;
+            5 = Fog/smoke;
+            6 = Strong wind/storm;
+            7 = Glare;
+            8 = Overcast;
+            9 = Other.
+        - name: col
+          description: >
+            Collision type:
+            -1 = Not specified;
+            1 = Two vehicles – head-on;
+            2 = Two vehicles – rear-end;
+            3 = Two vehicles – side impact;
+            4 = Three or more vehicles – in chain;
+            5 = Three or more vehicles – multiple collisions;
+            6 = Other collision;
+            7 = No collision.
+        - name: adr
+          description: "Postal address (recorded for accidents occurring within urban areas)."
+        - name: lat
+          description: "Latitude coordinate of accident location."
+        - name: long
+          description: "Longitude coordinate of accident location."
+
+    - name: stg_lieux
+      description: "Road and site characteristics for each accident."
+      columns:
+        - name: Num_Acc
+          description: "Accident identifier number."
+        - name: catr
+          description: >
+            Road category:
+            1 = Motorway;
+            2 = National road;
+            3 = Departmental road;
+            4 = Municipal road;
+            5 = Off public network;
+            6 = Parking open to public;
+            7 = Urban metropolitan roads;
+            9 = Other.
+        - name: voie
+          description: "Road number."
+        - name: v1
+          description: "Numeric index of the road number (e.g. for “2 bis”, “3 ter”)."
+        - name: v2
+          description: "Alphanumeric suffix of the road number."
+        - name: circ
+          description: >
+            Traffic regime:
+            -1 = Not specified;
+            1 = One-way;
+            2 = Two-way;
+            3 = Separated carriageways;
+            4 = Variable assignment lanes.
+        - name: nbv
+          description: "Total number of travel lanes."
+        - name: vosp
+          description: >
+            Presence of a reserved lane:
+            -1 = Not specified;
+            0 = Not applicable;
+            1 = Bike path;
+            2 = Bike lane;
+            3 = Reserved lane (e.g. bus, taxi).
+        - name: prof
+          description: >
+            Longitudinal profile of the road:
+            -1 = Not specified;
+            1 = Flat;
+            2 = Uphill;
+            3 = Hillcrest;
+            4 = Downhill.
+        - name: pr
+          description: "Reference point number (upstream marker); -1 = Not specified."
+        - name: pr1
+          description: "Distance in meters to the reference point; -1 = Not specified."
+        - name: plan
+          description: >
+            Horizontal alignment:
+            -1 = Not specified;
+            1 = Straight;
+            2 = Left curve;
+            3 = Right curve;
+            4 = S-curve.
+        - name: lartpc
+          description: "Width of central median (if present), in meters."
+        - name: larrout
+          description: "Carriageway width (excluding hard shoulder, median, parking), in meters."
+        - name: surf
+          description: >
+            Surface condition:
+            -1 = Not specified;
+            1 = Normal;
+            2 = Wet;
+            3 = Puddles;
+            4 = Flooded;
+            5 = Snowy;
+            6 = Mud;
+            7 = Icy;
+            8 = Oil or grease;
+            9 = Other.
+        - name: infra
+          description: >
+            Infrastructure feature:
+            -1 = Not specified;
+            0 = None;
+            1 = Underpass/tunnel;
+            2 = Bridge/flyover;
+            3 = Interchange ramp;
+            4 = Railway crossing;
+            5 = Signalized junction;
+            6 = Pedestrian zone;
+            7 = Toll zone;
+            8 = Construction site;
+            9 = Other.
+        - name: situ
+          description: >
+            Exact crash location:
+            -1 = Not specified;
+            0 = None;
+            1 = On roadway;
+            2 = On hard shoulder;
+            3 = On verge;
+            4 = On sidewalk;
+            5 = On bike path;
+            6 = On other special lane;
+            8 = Other.
+        - name: vma
+          description: "Posted speed limit at the accident site and time."
+
+    - name: stg_vehicules
+      description: "Details about each vehicle involved in the accident."
+      columns:
+        - name: Num_Acc
+          description: "Accident identifier number."
+        - name: id_vehicule
+          description: "Unique vehicle identifier (links to users)."
+        - name: num_veh
+          description: "Alphanumeric vehicle code."
+        - name: senc
+          description: >
+            Direction of travel:
+            -1 = Not specified;
+            0 = Unknown;
+            1 = Increasing marker/address;
+            2 = Decreasing marker/address;
+            3 = No marker.
+        - name: catv
+          description: >
+            Vehicle category code (00–99), e.g.:
+            00 = Indeterminable;
+            01 = Bicycle;
+            02 = Moped <50 cm³;
+            03 = Quadricycle (car-bodied);
+            …;
+            10 = Light commercial vehicle;
+            13 = Heavy goods vehicle;
+            …;
+            99 = Other.
+        - name: obs
+          description: >
+            Fixed obstacle struck:
+            -1 = Not specified;
+            0 = Not applicable;
+            1 = Parked vehicle;
+            2 = Tree;
+            3 = Metal guardrail;
+            4 = Concrete barrier;
+            5 = Other guardrail;
+            6 = Building/wall/bridge support;
+            7 = Signpost or emergency call station;
+            8 = Pole;
+            9 = Street furniture;
+            10 = Parapet;
+            11 = Traffic island or bollard;
+            12 = Curb;
+            13 = Ditch/embankment/rock face;
+            14 = Other fixed obstacle on roadway;
+            15 = Other fixed obstacle on curb/shoulder;
+            16 = Run-off-road without obstacle;
+            17 = Culvert head.
+        - name: obsm
+          description: >
+            Mobile obstacle struck:
+            -1 = Not specified;
+            0 = None;
+            1 = Pedestrian;
+            2 = Vehicle;
+            4 = Rail vehicle;
+            5 = Domestic animal;
+            6 = Wild animal;
+            9 = Other.
+        - name: choc
+          description: >
+            Initial point of impact:
+            -1 = Not specified;
+            0 = None;
+            1 = Front;
+            2 = Front-right;
+            3 = Front-left;
+            4 = Rear;
+            5 = Rear-right;
+            6 = Rear-left;
+            7 = Right side;
+            8 = Left side;
+            9 = Multiple impacts (rollover).
+        - name: manv
+          description: >
+            Main manoeuvre before crash:
+            -1 = Not specified;
+            0 = Unknown;
+            1 = No change of direction;
+            2 = Same direction, same lane;
+            3 = Between lanes;
+            4 = Reversing;
+            5 = Wrong way;
+            6 = Crossing central median;
+            7 = In bus lane (same dir);
+            8 = In bus lane (opposite dir);
+            9 = Merging;
+            10 = U-turn;
+            11 = Lane change left;
+            12 = Lane change right;
+            13 = Left diversion;
+            14 = Right diversion;
+            15 = Left turn;
+            16 = Right turn;
+            17 = Left overtaking;
+            18 = Right overtaking;
+            19 = Crossing roadway;
+            20 = Parking manoeuvre;
+            21 = Avoidance manoeuvre;
+            22 = Door opening;
+            23 = Stopped (not parked);
+            24 = Parked with occupants;
+            25 = Driving on sidewalk;
+            26 = Other manoeuvres.
+        - name: motor
+          description: >
+            Propulsion type:
+            -1 = Not specified;
+            0 = Unknown;
+            1 = Fossil fuel;
+            2 = Hybrid electric;
+            3 = Electric;
+            4 = Hydrogen;
+            5 = Human-powered;
+            6 = Other.
+        - name: occutc
+          description: "Number of occupants in the public-transport vehicle involved."
+
+    - name: stg_usagers
+      description: "Information on each person involved (drivers, passengers, pedestrians)."
+      columns:
+        - name: Num_Acc
+          description: "Accident identifier number."
+        - name: id_usager
+          description: "Unique user identifier (including pedestrians)."
+        - name: id_vehicule
+          description: "Vehicle identifier associated with the user."
+        - name: num_veh
+          description: "Alphanumeric vehicle code associated with the user."
+        - name: place
+          description: "Position of the user in the vehicle at time of accident (10 = Pedestrian)."
+        - name: catu
+          description: "User category: 1 = Driver; 2 = Passenger; 3 = Pedestrian."
+        - name: grav
+          description: "Injury severity: 1 = None; 2 = Fatal; 3 = Hospitalized injured; 4 = Lightly injured."
+        - name: sexe
+          description: "Sex of user: 1 = Male; 2 = Female."
+        - name: an_nais
+          description: "Year of birth of the user."
+        - name: trajet
+          description: >
+            Trip purpose:
+            -1/0 = Unspecified;
+            1 = Home–work;
+            2 = Home–school;
+            3 = Shopping;
+            4 = Work;
+            5 = Leisure;
+            9 = Other.
+        - name: secu1
+          description: >
+            Safety equipment in use:
+            -1 = Not specified;
+            0 = None;
+            1 = Seatbelt;
+            2 = Helmet;
+            3 = Child restraint;
+            4 = Reflective vest;
+            5 = Airbag (2RM/3RM);
+            6 = Gloves (2RM/3RM);
+            7 = Gloves + airbag (2RM/3RM);
+            8 = Not determinable;
+            9 = Other.
+        - name: secu2
+          description: "(same code list as secu1)."
+        - name: secu3
+          description: "(same code list as secu1)."
+        - name: locp
+          description: >
+            Pedestrian location:
+            -1 = Not specified;
+            0 = Not applicable;
+            1 = On roadway >50 m from crosswalk;
+            2 = On roadway <50 m from crosswalk;
+            3 = On crosswalk without lights;
+            4 = On crosswalk with lights;
+            5 = On sidewalk;
+            6 = On hard shoulder;
+            7 = On refuge or hard shoulder;
+            8 = On service road;
+            9 = Unknown.
+        - name: actp
+          description: >
+            Pedestrian action:
+            -1 = Not specified;
+            0 = Not applicable;
+            1 = Moving in direction of vehicle;
+            2 = Moving opposite direction;
+            3 = Crossing;
+            4 = Hidden;
+            5 = Playing/running;
+            6 = With animal;
+            9 = Other;
+            A = Boarding or exiting vehicle;
+            B = Unknown.
+        - name: etatp
+          description: >
+            Pedestrian status:
+            -1 = Not specified;
+            1 = Alone;
+            2 = Accompanied;
+            3 = In group.

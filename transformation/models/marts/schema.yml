@@ -1,0 +1,124 @@
+version: 2
+
+models:
+  - name: fct_accidents
+    description: "Core accident facts table with users, vehicles, and contextual data"
+    columns:
+      - name: accident_id
+        description: "Unique accident identifier"
+        tests:
+          - not_null
+      - name: user_id
+        description: "Unique user identifier within accident"
+        tests:
+          - not_null
+      - name: vehicle_id
+        description: "Unique vehicle identifier within accident"
+        tests:
+          - not_null
+      - name: is_severe_accident
+        description: "Binary flag for severe accidents (fatal or hospitalized)"
+        tests:
+          - not_null
+
+  - name: fct_accidents_hr
+    description: "Human-readable version of accident facts with descriptive labels"
+    columns:
+      - name: accident_id
+        description: "Unique accident identifier"
+        tests:
+          - not_null
+      - name: severity_label
+        description: "Human-readable severity description"
+      - name: gender_label
+        description: "Human-readable gender description"
+      - name: vehicle_category_label
+        description: "Human-readable vehicle category"
+      - name: trip_purpose_label
+        description: "Human-readable trip purpose"
+
+  - name: fct_accident_causes
+    description: "ML-focused feature mart for bicycle accident analysis"
+    columns:
+      - name: accident_id
+        description: "Unique accident identifier"
+        tests:
+          - not_null
+      - name: is_severe_accident
+        description: "Target variable for ML models"
+        tests:
+          - not_null
+      - name: night_poor_visibility
+        description: "Derived risk flag for night + poor visibility"
+      - name: adverse_weather_surface
+        description: "Derived risk flag for adverse weather + surface conditions"
+
+  - name: fct_bike_accidents_idf
+    description: "Bicycle accidents in Île-de-France region"
+    columns:
+      - name: accident_id
+        description: "Unique accident identifier"
+        tests:
+          - not_null
+      - name: vehicle_type
+        description: "Always 'bicycle' for this table"
+      - name: department
+        description: "Paris region department code"
+
+  - name: fct_micromobility_accidents_idf
+    description: "All micromobility vehicle accidents in Île-de-France region"
+    columns:
+      - name: accident_id
+        description: "Unique accident identifier"
+        tests:
+          - not_null
+      - name: vehicle_type
+        description: "Micromobility vehicle type (bicycle, scooter, e-bike, etc.)"
+      - name: is_electric
+        description: "Binary flag for electric vehicles"
+      - name: is_motorized_scooter
+        description: "Binary flag for motorized scooters"
+
+  - name: fct_micromobility_visualization
+    description: "Comprehensive visualization mart for micromobility accident analysis"
+    columns:
+      - name: accident_id
+        description: "Unique accident identifier"
+        tests:
+          - not_null
+      - name: user_id
+        description: "Unique user identifier within accident"
+        tests:
+          - not_null
+      - name: is_severe_accident
+        description: "Binary flag for severe accidents (fatal or hospitalized)"
+        tests:
+          - not_null
+      - name: vehicle_type
+        description: "Micromobility vehicle type (bicycle, scooter, e-bike, etc.)"
+      - name: vehicle_family
+        description: "Grouped vehicle type (Bicycle, Scooter, E-Transport)"
+      - name: detailed_age_group
+        description: "Fine-grained age grouping (Teenager, Young Adult, Adult, etc.)"
+      - name: trip_category
+        description: "Grouped trip purpose (Work-related, Essential, Recreational)"
+      - name: risk_profile
+        description: "Computed risk category (Low Risk, Medium Risk, High Risk)"
+      - name: risk_score
+        description: "Numeric risk score from 0-10 based on multiple factors"
+      - name: no_helmet_severe
+        description: "Risk flag for severe accidents without helmet"
+      - name: electric_no_infrastructure
+        description: "Risk flag for electric vehicles without cycle infrastructure"
+      - name: young_electric_rider
+        description: "Risk flag for young riders on electric vehicles"
+      - name: scooter_intersection
+        description: "Risk flag for scooter accidents at intersections"
+      - name: night_no_helmet
+        description: "Risk flag for night accidents without helmet"
+      - name: school_commute_rush
+        description: "Risk flag for school/commute trips during morning rush"
+      - name: detailed_time_period
+        description: "Fine-grained time classification"
+      - name: meteorological_season
+        description: "Meteorological season classification" 

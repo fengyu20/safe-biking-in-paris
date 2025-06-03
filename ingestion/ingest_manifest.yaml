@@ -1,0 +1,35 @@
+# ingest_manifest.yaml
+years:
+  "2023":
+    vehicules: https://www.data.gouv.fr/fr/datasets/r/146a42f5-19f0-4b3e-a887-5cd8fbef057b
+    usagers:   https://www.data.gouv.fr/fr/datasets/r/68848e2a-28dd-4efc-9d5f-d512f7dbe66f
+    lieux:     https://www.data.gouv.fr/fr/datasets/r/8bef19bf-a5e4-46b3-b5f9-a145da4686bc
+    caract:    https://www.data.gouv.fr/fr/datasets/r/104dbb32-704f-4e99-a71e-43563cb604f2
+
+  "2022":
+    vehicules:                 https://www.data.gouv.fr/fr/datasets/r/c9742921-4427-41e5-81bc-f13af8bc31a0
+    usagers:                   https://www.data.gouv.fr/fr/datasets/r/62c20524-d442-46f5-bfd8-982c59763ec8
+    lieux:                     https://www.data.gouv.fr/fr/datasets/r/a6ef711a-1f03-44cb-921a-0ce8ec975995
+    caract:                    https://www.data.gouv.fr/fr/datasets/r/5fc299c0-4598-4c29-b74c-6a67b0cc27e7
+    vehicules_immatricules_baac: https://www.data.gouv.fr/fr/datasets/r/5a858f9e-a229-4063-b96e-686b44d7739b
+
+  "2021":
+    vehicules:                 https://www.data.gouv.fr/fr/datasets/r/0bb5953a-25d8-46f8-8c25-b5c2f5ba905e
+    usagers:                   https://www.data.gouv.fr/fr/datasets/r/ba5a1956-7e82-41b7-a602-89d7dd484d7a
+    lieux:                     https://www.data.gouv.fr/fr/datasets/r/8a4935aa-38cd-43af-bf10-0209d6d17434
+    caract:                    https://www.data.gouv.fr/fr/datasets/r/85cfdc0c-23e4-4674-9bcd-79a970d7269b
+    vehicules_immatricules_baac: https://www.data.gouv.fr/fr/datasets/r/c4c7f24a-425f-48fe-b589-5e59f6658ef0
+
+  "2020":
+    vehicules:                 https://www.data.gouv.fr/fr/datasets/r/a66be22f-c346-49af-b196-71df24702250
+    usagers:                   https://www.data.gouv.fr/fr/datasets/r/78c45763-d170-4d51-a881-e3147802d7ee
+    lieux:                     https://www.data.gouv.fr/fr/datasets/r/e85c41f7-d4ea-4faf-877f-ab69a620ce21
+    caract:                    https://www.data.gouv.fr/fr/datasets/r/07a88205-83c1-4123-a993-cba5331e8ae0
+    vehicules_immatricules_baac: https://www.data.gouv.fr/fr/datasets/r/eddac81d-e6bc-4d02-a864-7b4ab29ed8db
+
+  "2019":
+    vehicules:                 https://www.data.gouv.fr/fr/datasets/r/780cd335-5048-4bd6-a841-105b44eb2667
+    usagers:                   https://www.data.gouv.fr/fr/datasets/r/36b1b7b3-84b4-4901-9163-59ae8a9e3028
+    lieux:                     https://www.data.gouv.fr/fr/datasets/r/2ad65965-36a1-4452-9c08-61a6c874e3e6
+    caract:                    https://www.data.gouv.fr/fr/datasets/r/e22ba475-45a3-46ac-a0f7-9ca9ed1e283a
+    vehicules_immatricules_baac: https://www.data.gouv.fr/fr/datasets/r/4e729f76-c04b-4388-be67-4762f5c05b55

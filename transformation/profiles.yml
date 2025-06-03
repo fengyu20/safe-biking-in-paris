@@ -1,0 +1,12 @@
+# The name that dbt_project.yml will use to refer to this project
+safe_biking:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth
+      project: biking-in-paris
+      dataset: accidents 
+      location: US
+      threads: 6 
+
