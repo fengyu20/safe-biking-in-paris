@@ -55,6 +55,7 @@ with selected as (
   where 
     department in ({{ "'" + idf_departments | join("', '") + "'" }})
     and vehicle_category_cd in {{ micro_codes }}
+    and is_severe_accident is not null -- targe column should not be null
 
 )
 

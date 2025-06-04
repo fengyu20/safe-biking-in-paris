@@ -18,11 +18,9 @@ with accidents_geo as (
     c.jour                                                        as day,
     c.mois                                                        as month,
     date(c.an, c.mois, c.jour)                                    as accident_date,
-    /*   BigQuery: 1 = Sunday … 7 = Saturday                                              */
     extract(dayofweek from date(c.an,c.mois,c.jour))              as day_of_week,
     if(extract(dayofweek from date(c.an,c.mois,c.jour)) in (1,7), 1, 0) as is_weekend_flg,
 
-    /* hh:mm stored as STRING(4) → TIME, then buckets                              */
     c.hrmn                                                       as time_of_day,
     extract(hour   from c.hrmn)                                  as hour,
     extract(minute from c.hrmn)                                  as minute,
@@ -207,17 +205,6 @@ select
       then cast(a.accident_year - u.birth_year as int64)
     else null
   end                                                             as age,
-  case
-    when u.birth_year is null                                     then null
-    when u.birth_year between 1901 and a.accident_year            and (a.accident_year - u.birth_year) <= 120 then
-      case
-        when (a.accident_year - u.birth_year) < 18                then 0  -- 0‑17
-        when (a.accident_year - u.birth_year) < 35                then 1  -- 18‑34
-        when (a.accident_year - u.birth_year) < 65                then 2  -- 35‑64
-        else                                                          3  -- 65+
-      end
-    else null
-  end                                                             as age_band_cd,
   u.trip_purpose_cd,
   u.helmet_flg,
   u.seatbelt_flg,

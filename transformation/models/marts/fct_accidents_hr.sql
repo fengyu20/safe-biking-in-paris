@@ -22,7 +22,7 @@ select
   vehicle_id,
 
   -- --------------------------------------------------------------------
-  -- USER‑FRIENDLY CATEGORICAL LABELS (all mappings straight from meta‑data)
+  -- USER‑FRIENDLY CATEGORICAL LABELS 
   -- --------------------------------------------------------------------
   /* ---------------------------------------------------- User role */
   case user_role_cd
