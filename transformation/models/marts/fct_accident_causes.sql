@@ -15,7 +15,7 @@ with accidents as (
 features as (
   select 
     ------------------------------------------------------------------
-    -- Identifiers kept for audit / stratified splits (not for training)
+    -- Identifiers 
     ------------------------------------------------------------------
     accident_id,
     user_id,
@@ -27,13 +27,7 @@ features as (
 
     -- ===================================== CYCLIST DEMOGRAPHICS ====
     age,
-    case
-      when age is null                   then 'unknown'
-      when age < 18                      then 'youth'
-      when age between 18 and 34         then 'young_adult'
-      when age between 35 and 64         then 'adult'
-      else 'senior'
-    end                                              as age_group,
+    age_group
 
     gender_cd,
     case gender_cd when 1 then 'male' when 2 then 'female' else 'unknown' end as gender,
@@ -58,7 +52,6 @@ features as (
     accident_date,
     accident_year,
     extract(month  from accident_date)                  as month,
-    --  seasons (N‑hemisphere, France)                  
     case extract(month from accident_date)
       when 12 then 'winter' when 1 then 'winter' when 2 then 'winter'
       when 3  then 'spring' when 4 then 'spring' when 5 then 'spring'
@@ -77,7 +70,7 @@ features as (
     case time_of_day_bucket_cd when 0 then 'off_peak' when 1 then 'morning_rush'
                                when 2 then 'evening_rush' when 3 then 'night' end as time_period,
 
-    -- Quick night flag useful for tree models
+    -- One hot encoding
     case when time_of_day_bucket_cd = 3 then 1 else 0 end            as is_night,
 
     -- ===================================== ENVIRONMENT ============

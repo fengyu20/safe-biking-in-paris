@@ -4,9 +4,12 @@ safe_biking:
   outputs:
     dev:
       type: bigquery
-      method: oauth
+      method: service-account
+      # The same credential file in the root folder
+      keyfile: ../credentials.json
       project: biking-in-paris
       dataset: accidents 
+      # Update the location if needed
       location: US
       threads: 6 
 
