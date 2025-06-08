@@ -7,7 +7,7 @@ sources:
     tables:
       - name: raw_caract_all
         external:
-          location: "gs://biking-in-paris-bucket/data/raw/*/caract.csv"
+          location: "gs://biking-in-paris-bucket/raw/*/caract.csv"
           options:
             format: csv
             skip_leading_rows: 1
@@ -67,7 +67,7 @@ sources:
     tables:
       - name: raw_lieux_all
         external:
-          location: "gs://biking-in-paris-bucket/data/raw/*/lieux.csv"
+          location: "gs://biking-in-paris-bucket/raw/*/lieux.csv"
           options:
             format: csv
             skip_leading_rows: 1
@@ -136,7 +136,7 @@ sources:
     tables:
       - name: raw_usagers_all
         external:
-          location: "gs://biking-in-paris-bucket/data/raw/*/usagers.csv"
+          location: "gs://biking-in-paris-bucket/raw/*/usagers.csv"
           options:
             format: csv
             skip_leading_rows: 1
@@ -199,7 +199,7 @@ sources:
     tables:
       - name: raw_vehicules_all
         external:
-          location: "gs://biking-in-paris-bucket/data/raw/*/vehicules.csv"
+          location: "gs://biking-in-paris-bucket/raw/*/vehicules.csv"
           options:
             format: csv
             skip_leading_rows: 1

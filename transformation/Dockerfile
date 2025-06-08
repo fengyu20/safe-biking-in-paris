@@ -12,5 +12,8 @@ WORKDIR /app
 
 COPY . .
 
+COPY scripts/build.sh /usr/local/bin/dbt-build
+RUN chmod +x /usr/local/bin/dbt-build
+
 ENTRYPOINT ["dbt"]
-CMD ["run", "--profiles-dir", ".", "--project-dir", "."]
+CMD ["build", "--profiles-dir", ".", "--project-dir", "."]

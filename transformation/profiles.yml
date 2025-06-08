@@ -4,9 +4,11 @@ safe_biking:
   outputs:
     dev:
       type: bigquery
-      method: oauth
+      method: service-account
+      # The credential file is mounted at /app/credentials.json in the container
+      keyfile: /app/credentials.json
       project: biking-in-paris
       dataset: accidents 
+      # Update the location if needed
       location: US
       threads: 6 
-

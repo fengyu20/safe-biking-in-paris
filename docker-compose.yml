@@ -44,15 +44,18 @@ services:
     depends_on:
       - ingestion
 
-  ml:
+  eda:
     build:
-      context: ./machine_learning
+      context: ./eda
       dockerfile: Dockerfile
+    ports:
+      - "8888:8888"  
     volumes:
-      - ./machine_learning:/app
+      - ./eda:/app
       - ./credentials.json:/app/credentials.json
+      - ./eda_output:/app/eda_output
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
-      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
     depends_on:
       - dbt

@@ -3,11 +3,6 @@
     alias        = 'fct_accidents_hr'
 ) }}
 
-{# ------------------------------------------------------------------------
-# 0) constants (vehicle codes generally considered micro‑mobility)
-# --------------------------------------------------------------------- #}
-{% set micro_vehicle_codes = (1, 30, 32, 34, 50, 60, 80) %}
-
 with base as (
   select *
   from {{ ref('fct_accidents') }}
@@ -25,6 +20,7 @@ select
   -- USER‑FRIENDLY CATEGORICAL LABELS (all mappings straight from meta‑data)
   -- --------------------------------------------------------------------
   /* ---------------------------------------------------- User role */
+  user_role_cd,
   case user_role_cd
     when 1 then 'Driver'
     when 2 then 'Passenger'
@@ -32,6 +28,7 @@ select
   end                                             as user_role_label,
 
   /* ---------------------------------------------------- Injury severity */
+  severity_cd,
   case severity_cd
     when 1 then 'Unharmed'
     when 2 then 'Fatality'
@@ -41,6 +38,7 @@ select
   end                                             as severity_label,
 
   /* ---------------------------------------------------- Sex */
+  gender_cd,
   case gender_cd
     when 1 then 'Male'
     when 2 then 'Female'
@@ -53,13 +51,26 @@ select
   birth_year,
   age,
   case
-    when age is null            then null
-    when age < 18               then 'Under 18'
-    when age < 35               then '18‑34'
-    when age < 65               then '35‑64'
-    else                             '65+'
-  end                                             as age_band_label,
+    when age is null or age < 0 or age > 110 then 'Invalid'
+    when age < 13                           then 'Child'
+    when age between 13 and 17         then 'Youth'
+    when age between 18 and 34         then 'Young adult'
+    when age between 35 and 49         then 'Mid adult'
+    when age between 50 and 64         then 'Older adult'
+    else                               'Senior'
+  end                                             as age_group_label,
 
+  case
+    when age is null or age < 0 or age > 110 then -1
+    when age < 13                           then 0
+    when age between 13 and 17              then 1
+    when age between 18 and 34              then 2
+    when age between 35 and 49              then 3
+    when age between 50 and 64              then 4
+    else                                        5
+  end as age_group_cd,
+
+  trip_purpose_cd,
   case trip_purpose_cd
     when 1 then 'Home–work'
     when 2 then 'Home–school'
@@ -73,7 +84,11 @@ select
   -- --------------------------------------------------------------------
   -- SAFETY EQUIPMENT FLAGS (already 0/1 in base model)
   -- --------------------------------------------------------------------
-  helmet_flg,
+  helmet_flg as has_helmet,
+  case
+    when helmet_flg = 1 then 'Wearing helmet'
+    else 'No helmet'
+  end                                             as helmet_label,
   seatbelt_flg,
   child_rst_flg,
 
@@ -92,10 +107,12 @@ select
     when 7 then 'Saturday'
     else 'Unknown'
   end                                             as day_of_week_label,
-  is_weekend_flg,
+  is_weekend_flg            as is_weekend,
 
+  month,
   hour,
   minute,
+  time_of_day_bucket_cd,
   case time_of_day_bucket_cd
     when 0 then 'Off‑peak'
     when 1 then 'Morning peak'
@@ -238,9 +255,6 @@ select
   -- VEHICLE CATEGORIES
   -- --------------------------------------------------------------------
   vehicle_category_cd,
-  /* micro‑mobility flag */
-  case when vehicle_category_cd in {{ micro_vehicle_codes }} then 1 else 0 end
-                                                  as is_micromobility_flg,
 
   case vehicle_category_cd
     when 0  then 'Indeterminable'
@@ -275,15 +289,6 @@ select
     else 'Other / Unknown'
   end                                             as vehicle_category_label,
 
-  case 
-    when vehicle_category_cd in (1,80)                             then 'Bicycle / E‑bike'
-    when vehicle_category_cd in (30,32,34,50,60)                    then 'Scooter / Personal transport'
-    when vehicle_category_cd in (2,31,33)                           then 'Moped / Motorcycle'
-    when vehicle_category_cd = 7                                    then 'Passenger car'
-    when vehicle_category_cd in (10,13,14,15,20,21,35,36,41,42,43)  then 'Goods / Special'
-    when vehicle_category_cd in (37,38,39,40)                       then 'Public transport'
-    else 'Other / Unknown'
-  end                                             as vehicle_category_group,
 
   -- --------------------------------------------------------------------
   -- IMPACT, ENGINE TYPE, ROAD INFRA‑DETAILS
@@ -353,9 +358,7 @@ select
     else 'Unknown'
   end                                             as planimetry_label,
 
-  -- --------------------------------------------------------------------
-  -- ADDITIONAL NUMERIC / FACT FIELDS PASSED THROUGH FOR VISUAL ANALYTICS
-  -- --------------------------------------------------------------------
+
   travel_direction_cd,
   obstacle_stationary_cd,
   obstacle_moving_cd,
@@ -366,13 +369,10 @@ select
 
   latitude,
   longitude,
+  geom,
   accident_year,
   speed_limit_kmh,
   vehicles_in_accident,
-  users_in_accident,
-  occupant_count,
-
-  -- Geometry for mapping (BigQuery Geography)
-  ST_GEOGPOINT(longitude, latitude)                              as geom
+  users_in_accident
 
 from base

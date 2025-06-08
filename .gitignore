@@ -6,6 +6,16 @@ ingestion/data/raw
 analysis/analysis_env
 credentials.json
 *.pkl
+ml_env
+new_model
+eda_container
+ml_analysis_plots
+ml_temp
+dbt.log
+ml/
+temp.md
+past/
+data/
 
 .terraform/
 *.tfstate
@@ -46,3 +56,4 @@ credentials.json
 .vscode/
 *.swp
 *.swo.terraform/
+eda/.ipynb_checkpoints/eda-checkpoint.ipynb

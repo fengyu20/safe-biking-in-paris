@@ -5,7 +5,7 @@ WITH raw AS (
     *,
     COALESCE(
       SAFE_CAST(REGEXP_EXTRACT(_FILE_NAME, r'(\d{4})\.csv$') AS INT64),
-      CAST(an AS INT64)
+      SAFE_CAST(an AS INT64)
     ) AS accident_year
   FROM {{ source('raw_caract', 'raw_caract_all') }}
 )
@@ -19,7 +19,10 @@ SELECT
   SAFE_CAST(TRIM(an) AS INT64)           AS an,
 
   -- time of crash  + keep raw
-  SAFE.PARSE_TIME('%H:%M', TRIM(hrmn))   AS hrmn,
+  CASE 
+    WHEN TRIM(hrmn) = '' OR TRIM(hrmn) IS NULL OR TRIM(hrmn) = '-1' THEN NULL
+    ELSE SAFE.PARSE_TIME('%H:%M', TRIM(hrmn))
+  END                                    AS hrmn,
   TRIM(hrmn)                             AS hrmn_raw,
 
   -- coded fields (sentinels kept)

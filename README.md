@@ -69,26 +69,28 @@ docker-compose run --rm infra init
 ```
 
 **Workflow for Infrastructure Changes:**
+> Note: As we install the Terraform inside the docker container, so we need to activate the relevant docker by adding `docker-compose run --rm infra`. If you interact with Terrafrom direcly, simply call it `terraform plan`.
+
 When you need to make changes to your infrastructure:
 
 1. **Edit Configuration:** Modify the Terraform files (e.g., `main.tf`) in the `./infra` directory
-2. **Review the Plan:** `terraform plan`
-3. **Apply Changes:**: `terraform apply`
-4. **Delete Relevant Resources:**: `terraform destroy`
+2. **Review the Plan:** `docker-compose run --rm infra terraform plan`
+3. **Apply Changes:**: `docker-compose run --rm infra terraform apply`
+4. **Delete Relevant Resources:**: `docker-compose run --rm infra terraform destroy`
 
 #### Advanced: Adding Existing Infrastructure to Terraform
 
 If you have already created the infrastructure using Google Cloud but want Terraform to manage it later, you need to let Terraform know that these resources exist. One way is to import them as follows:
 
 ```bash
-terraform import "google_storage_bucket.biking-in-paris-bucket" "biking-in-paris-bucket"
-terraform import "google_bigquery_dataset.accidents" "projects/biking-in-paris/datasets/accidents"
+docker-compose run --rm infra terraform import "google_storage_bucket.biking-in-paris-bucket" "biking-in-paris-bucket"
+docker-compose run --rm infra terraform import "google_bigquery_dataset.accidents" "projects/biking-in-paris/datasets/accidents"
 ```
 
-Then, if you use the command `terraform state list` to check, you can notice the following output:
+Then, if you use the command `docker-compose run --rm infra terraform state list` to check, you can notice the following output:
 
 ```bash
-zoe@Mac infra % terraform state list
+zoe@Mac infra % docker-compose run --rm infra terraform state list
 google_bigquery_dataset.accidents
 google_storage_bucket.biking-in-paris-bucket
 ```
@@ -164,42 +166,62 @@ The external tables in `models/src.yml` use wildcard patterns to read across all
 * `gs://biking-in-paris-bucket/data/raw/*/usagers.csv`
 * `gs://biking-in-paris-bucket/data/raw/*/vehicules.csv`
 
-The following external tables are created based on the CSV files:
+Data flow layers are created as follows.
 
-* `stg_caract`: Accident characteristics
-* `stg_lieux`: Location and road details
-* `stg_vehicules`: Vehicle information
-* `stg_usagers`: User (person) information
+1. **Raw Sources** (`src.yml`):
+   - `raw_caract_all` → Accident characteristics (when, where, weather)
+   - `raw_lieux_all` → Road/infrastructure details  
+   - `raw_usagers_all` → People involved (demographics, injuries)
+   - `raw_vehicules_all` → Vehicles and their actions
 
-Based on these staging models, a mart model is created: `fct_accidents`.
+2. **Staging Models** (`staging/`):
+   - `stg_caract` → Cleans dates, times, coordinates
+   - `stg_lieux` → Standardizes road categories and conditions
+   - `stg_usagers` → Normalizes user roles and severity codes
+   - `stg_vehicules` → Harmonizes vehicle categories across years
 
-And based on this base model:
+3. **Core Fact Table** (`marts/fct_accidents.sql`):
+   - **Main analytical table** - one row per user per accident
+   - **Complex joins** linking accidents → locations → vehicles → users
+   - **Handles data quality** issues like vehicle number format changes between years
+   - **Enriched dimensions** with calculated fields like age, time buckets
 
-1. Data visualization model `fct_accidents_hr`: translates machine-readable codes into human-readable format. This step helps us prepare for machine learning and gain general insights.
-2. Machine learning–based model `fct_accident_causes`: picks features from the source table:
+4. **Analytics Layer**:
+   - `fct_accidents_hr` → **Human-readable labels** for all coded fields
+   - `fct_accidents_ml` → **ML-ready** with feature encoding and missing value handling  
+   - `fct_bike_accidents_idf` → **Specialized subset** for bike safety analysis in IDF region
 
-   1. `fct_bike_accidents_idf`: filters bike accidents in Île-de-France—there are only around 7,000 accidents, which might influence accuracy.
-   2. `fct_micromobility_accidents_idf`: includes micromobility, which has about 20,000 accidents.
 
 Errors encountered & tips on using dbt can be found in [this doc](docs/raw_data_cleaning_notes.md)
+
+### EDA: Exploratory Data Analysis
+
+### Introduction
+
+Before starting the machine learning phase, let’s first take a look at the dataset.
+
+### How to use it
+
+After launching the container (e.g., `make up` or `docker-compose up --build eda`), you can access the `eda.ipynb` notebook at:
+
+```
+http://localhost:8888
+```
+![](docs/img/jupyter.png)
+
+The plots are saved in the `eda/plots` folder. The bars in each plot are ordered by descending severity rate (fatalities + hospitalized injuries).
+
+For example, the following plot compares the severity rate across different road categories:
+
+![](eda/plots/severity_road_category_label.png)
 
 ### Machine Learning
 
 #### Introduction
 
-This module focuses on accident severity prediction and risk analysis for bicycle and micromobility accidents in Île-de-France using machine learning techniques. It analyzes patterns in accident data to identify key risk factors and generate actionable safety recommendations.
+This module focuses on accident severity prediction and risk analysis for bike accidents in Île-de-France using machine learning techniques. It analyzes patterns in accident data to identify key risk factors and generate actionable safety recommendations.
 
-The analysis uses dbt-transformed BigQuery tables that contain cleaned and enriched accident data:
-- `fct_bike_accidents_idf` - 7,811 bicycle accidents in Île-de-France
-- `fct_micromobility_accidents_idf` - 20,889  micromobility accidents (bikes, e-bikes, scooters, e-scooters) in Île-de-France
-
-
-This project uses Random Forest, with a focus on predicting `is_severe_accident` (binary classification), with other features like weather, light conditions etc.
-
-After analysing, we can results as follows:
-1. 
-1. **Large scooters have 12.7% severe accident rate** vs 6.9% for bicycles (1.8x more dangerous)
-   ![](docs/img/micromobility_vehicle_risk_comparison.png)
+The analysis use the dbt-transformed BigQuery table [`fct_bike_accidents_idf`](transformation/models/marts/fct_bike_accidents_idf.sql) that contain cleaned accident data.
 
 
 ###  How to use it

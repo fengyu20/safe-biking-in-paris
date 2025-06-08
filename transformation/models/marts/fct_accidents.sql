@@ -1,6 +1,16 @@
 {{ config(
     materialized = 'table',
-    alias        = 'fct_accidents'
+    alias        = 'fct_accidents',
+    partition_by = {
+        'field': 'accident_year',
+        'data_type': 'int64',
+        'range': {
+            'start': 2010,
+            'end': 2030,
+            'interval': 1
+        }
+    },
+    cluster_by   = ['department','accident_date']
 ) }}
 
 
@@ -11,7 +21,7 @@ with accidents_geo as (
 
   select
     /* ------------------------------------------------ Accident identifiers */
-    c.num_acc                                                     as accident_id,
+    c.Num_Acc                                                     as accident_id,
 
     /* ------------------------------------------------- Calendar / timing */
     c.an                                                          as accident_year,
@@ -103,7 +113,7 @@ with accidents_geo as (
     l.vma                                                        as speed_limit_kmh
 
   from {{ ref('stg_caract') }} c
-  join {{ ref('stg_lieux')  }} l using (num_acc)
+  join {{ ref('stg_lieux')  }} l using (Num_Acc)
 ),
 
 {# ------------------------------------------------------------------------
@@ -112,7 +122,7 @@ with accidents_geo as (
 vehicles as (
 
   select
-    num_acc                    as accident_id,
+    Num_Acc                    as accident_id,
     id_vehicule                as vehicle_id,
     num_veh                    as vehicle_number,
 
@@ -142,10 +152,27 @@ vehicles as (
 users as (
 
   select
-    num_acc                    as accident_id,
+    Num_Acc                    as accident_id,
     id_vehicule                as vehicle_id,
     id_usager                  as user_id,
     num_veh                    as vehicle_number,
+    -- Standardize vehicle number format for consistent JOINs across years
+    -- Convert numeric format (2019-2020) to alphabetic format (2021-2023)
+    case 
+      when num_veh = '1' then 'A01'
+      when num_veh = '2' then 'B01' 
+      when num_veh = '3' then 'C01'
+      when num_veh = '4' then 'D01'
+      when num_veh = '5' then 'E01'
+      when num_veh = '6' then 'F01'
+      when num_veh = '7' then 'G01'
+      when num_veh = '8' then 'H01'
+      when num_veh = '9' then 'I01'
+      when num_veh = '10' then 'J01'
+      when num_veh = '11' then 'Y01'
+      when num_veh = '12' then 'Z01'
+      else num_veh
+    end                        as vehicle_number_standardized,
 
     /* catu 1 – Driver | 2 – Passenger                                       */
     catu                       as user_role_cd,
@@ -189,92 +216,99 @@ accident_user_counts as (
 )
 
 {# ------------------------------------------------------------------------
-# 5) FINAL SELECT  (one line per user × vehicle × accident)                 #}
-select
-  /* ------------------------------ Identifiers */
-  u.user_id,
-  u.accident_id,
-  u.vehicle_id,
+# 5) FINAL SELECT                                                         #}
+select * except(rn)
+from (
+  select
+    /* ------------------------------ Identifiers */
+    u.user_id,
+    u.accident_id,
+    v.vehicle_id,
 
-  /* ------------------------------ User dimensions */
-  u.user_role_cd,
-  u.severity_cd,
-  u.gender_cd,
-  u.birth_year,
-  case
-    when u.birth_year is null                                     then null
-    when u.birth_year between 1901 and a.accident_year            and (a.accident_year - u.birth_year) <= 120
-      then cast(a.accident_year - u.birth_year as int64)
-    else null
-  end                                                             as age,
-  case
-    when u.birth_year is null                                     then null
-    when u.birth_year between 1901 and a.accident_year            and (a.accident_year - u.birth_year) <= 120 then
-      case
-        when (a.accident_year - u.birth_year) < 18                then 0  -- 0‑17
-        when (a.accident_year - u.birth_year) < 35                then 1  -- 18‑34
-        when (a.accident_year - u.birth_year) < 65                then 2  -- 35‑64
-        else                                                          3  -- 65+
-      end
-    else null
-  end                                                             as age_band_cd,
-  u.trip_purpose_cd,
-  u.helmet_flg,
-  u.seatbelt_flg,
-  u.child_rst_flg,
-  u.secu1, u.secu2, u.secu3,
-  u.pedestrian_location_cd,
-  u.pedestrian_action_cd,
-  u.pedestrian_state_cd,
-  u.seat_position_cd,
+    /* ------------------------------ User dimensions */
+    u.user_role_cd,
+    u.severity_cd,
+    u.gender_cd,
+    u.birth_year,
+    case
+      when u.birth_year is null                                     then null
+      when u.birth_year between 1901 and a.accident_year            and (a.accident_year - u.birth_year) <= 120
+        then cast(a.accident_year - u.birth_year as int64)
+      else null
+    end                                                             as age,
 
-  /* ------------------------------ Vehicle dimensions */
-  v.vehicle_number,
-  v.vehicle_category_cd,
-  v.travel_direction_cd,
-  v.obstacle_stationary_cd,
-  v.obstacle_moving_cd,
-  v.impact_point_cd,
-  v.manoeuvre_cd,
-  v.motor_type_cd,
-  v.occupant_count,
+    u.trip_purpose_cd,
+    u.helmet_flg,
+    u.seatbelt_flg,
+    u.child_rst_flg,
+    u.secu1, u.secu2, u.secu3,
+    u.pedestrian_location_cd,
+    u.pedestrian_action_cd,
+    u.pedestrian_state_cd,
+    u.seat_position_cd,
 
-  /* ------------------------------ Accident / road dimensions */
-  a.accident_year,
-  a.accident_date,
-  a.day_of_week,
-  a.is_weekend_flg,
-  a.hour,
-  a.minute,
-  a.time_of_day_bucket_cd,
-  a.light_condition                         as light_condition_grp_cd,
-  a.weather_condition                       as weather_condition_grp_cd,
-  a.collision_type                          as collision_group_cd,
-  a.within_urban                            as within_urban_cd,
-  a.intersection_type                       as intersection_type_cd,
-  a.department,
-  a.municipality_code,
-  a.road_category_cd,
-  a.circulation_type_cd,
-  a.number_of_lanes,
-  a.public_transport_lane_cd,
-  a.long_profile_cd,
-  a.planimetry_cd,
-  a.median_width_m,
-  a.roadway_width_m,
-  a.surface_condition_cd,
-  a.infrastructure_cd,
-  a.situation_cd,
-  a.speed_limit_kmh,
-  a.latitude,
-  a.longitude,
+    /* ------------------------------ Vehicle dimensions */
+    v.vehicle_number,
+    v.vehicle_category_cd,
+    v.travel_direction_cd,
+    v.obstacle_stationary_cd,
+    v.obstacle_moving_cd,
+    v.impact_point_cd,
+    v.manoeuvre_cd,
+    v.motor_type_cd,
+    v.occupant_count,
 
-  /* ------------------------------ Aggregate controls */
-  avc.vehicles_in_accident,
-  auc.users_in_accident
+    /* ------------------------------ Accident / road dimensions */
+    a.accident_year,
+    a.month,
+    a.accident_date,
+    a.day_of_week,
+    a.is_weekend_flg,
+    a.hour,
+    a.minute,
+    a.time_of_day_bucket_cd,
+    a.light_condition                         as light_condition_grp_cd,
+    a.weather_condition                       as weather_condition_grp_cd,
+    a.collision_type                          as collision_group_cd,
+    a.within_urban                            as within_urban_cd,
+    a.intersection_type                       as intersection_type_cd,
+    a.department,
+    a.municipality_code,
+    a.road_category_cd,
+    a.circulation_type_cd,
+    a.number_of_lanes,
+    a.public_transport_lane_cd,
+    a.long_profile_cd,
+    a.planimetry_cd,
+    a.median_width_m,
+    a.roadway_width_m,
+    a.surface_condition_cd,
+    a.infrastructure_cd,
+    a.situation_cd,
+    a.speed_limit_kmh,
+    a.latitude,
+    a.longitude,
 
-from users u
-left join vehicles                v  using (accident_id, vehicle_id)
-left join accidents_geo           a  using (accident_id)
-left join accident_vehicle_counts avc using (accident_id)
-left join accident_user_counts    auc using (accident_id)
+    /* ------------------------------ Aggregate controls */
+    avc.vehicles_in_accident,
+    auc.users_in_accident,
+
+    SAFE.ST_GEOGPOINT(a.longitude, a.latitude)                     as geom,
+
+    ROW_NUMBER() OVER (
+      PARTITION BY u.user_id, u.accident_id
+      ORDER BY v.vehicle_id IS NULL  
+    ) as rn
+
+  from users u
+  left join vehicles v on (
+    u.accident_id = v.accident_id 
+    AND (
+      u.vehicle_id = v.vehicle_id 
+      OR (u.vehicle_id IS NULL AND u.vehicle_number_standardized = v.vehicle_number)
+    )
+  )
+  left join accidents_geo           a  on u.accident_id = a.accident_id
+  left join accident_vehicle_counts avc on u.accident_id = avc.accident_id
+  left join accident_user_counts    auc on u.accident_id = auc.accident_id
+)
