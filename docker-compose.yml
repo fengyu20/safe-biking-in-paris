@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
 
   infra:
@@ -57,5 +55,24 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
       - PYTHONUNBUFFERED=1
+    depends_on:
+      - dbt
+
+  ml:
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
+    ports:
+      - "8800:8800"
+    volumes:
+      - ./ml:/app/ml
+      - ./eda:/app/eda
+      - ./credentials.json:/app/credentials.json
+      - ./ml_output:/app/ml_output
+      - ./models:/app/models
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
     depends_on:
       - dbt

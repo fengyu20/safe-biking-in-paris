@@ -1,7 +1,7 @@
 # Makefile for Safe Biking in Paris - Data Pipeline
 
 # Variables
-DC := docker-compose
+DC := docker compose
 PRECHECK := check-docker check-credentials
 
 # Phony targets
@@ -19,6 +19,7 @@ help:
 	@echo "  make ingest      - Execute data ingestion"
 	@echo "  make transform   - Execute data transformations"
 	@echo "  make eda         - Launch Jupyter for EDA"
+	@echo "  make ml          - Launch Jupyter for ML"
 	@echo
 	@echo "Cleanup (Use with caution):"
 	@echo "  make down        - Stop all containers"
@@ -39,7 +40,9 @@ endef
 
 check-docker:
 	$(call _check_cmd,docker)
-	$(call _check_cmd,docker-compose)
+	@echo "Checking docker compose..."
+	@docker compose version > /dev/null || (echo "docker compose not found! Please install Docker Desktop." && exit 1)
+	@echo "docker compose is available"
 
 check-credentials:
 	@echo "Checking credentials..."
@@ -72,15 +75,23 @@ eda: $(PRECHECK)
 	@echo "Access at: http://localhost:8888 (notebook: eda.ipynb)"
 	@$(DC) run --rm --service-ports eda
 
+ml: $(PRECHECK)
+	@echo "Starting Jupyter for ML..."
+	@echo "Access at: http://localhost:8800 (notebook: ml.ipynb)"
+	@$(DC) run --rm --service-ports ml
+
 ## Full pipeline
 up: setup build
 	@echo "Running full pipeline..."
+	@echo "It may take a few minutes to build the infrastructure..."
 	@$(DC) up --build infra
 	@$(DC) run --rm ingestion
 	@$(DC) run --rm dbt
 	@echo "Executing EDA notebook..."
 	@$(DC) run --rm eda jupyter nbconvert --execute eda.ipynb --to html --output-dir=/app/analysis
 	@echo "Pipeline complete! Results in 'analysis/'"
+	@echo "Executing ML notebook..."
+	@$(DC) run --rm ml jupyter nbconvert --execute ml.ipynb --to html --output-dir=/app/ml_output
 
 ## Utilities
 down: check-docker

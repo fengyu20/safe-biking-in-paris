@@ -16,13 +16,18 @@ def upload_csvs(manifest: dict, bucket_name: str, prefix: str = ""):
     for year, datasets in manifest.get('years', {}).items():
         for name, url in datasets.items():
             target_path = f"{prefix.rstrip('/')}/{year}/{name}.csv"
+            blob = bucket.blob(target_path.lstrip('/'))
+            
+            if blob.exists():
+                print(f"[{year}][{name}] ✓ already exists at gs://{bucket_name}/{target_path} - skipping")
+                continue
+            
             print(f"[{year}][{name}] → downloading {url}")
             resp = requests.get(url, stream=True)
             if resp.status_code != 200:
                 print(f"  ! failed to download ({resp.status_code})", file=sys.stderr)
                 continue
 
-            blob = bucket.blob(target_path.lstrip('/'))
             blob.upload_from_file(resp.raw)
             print(f"  ✓ uploaded to gs://{bucket_name}/{target_path}")
 

@@ -12,7 +12,7 @@ eda_container
 ml_analysis_plots
 ml_temp
 dbt.log
-ml/
+ml_temp/
 temp.md
 past/
 data/

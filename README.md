@@ -29,14 +29,23 @@ Please check [this doc](docs/google-cloud-setup.md) for `credentials.json` confi
 The following command automatically downloads the accident files, cleans the data, performs machine learning, and generates the visualizations.
 
 ```bash
+# 0. Install Docker (Docker Compose V2 Included)
+brew install --cask docker
+open -a Docker
+# If you face the malware blocked issue, run the following command:
+# sudo xattr -r -d com.apple.quarantine /Applications/Docker.app
+
 # 1. Clone the repository
 git clone https://github.com/fengyu20/safe-biking-in-paris
 cd safe-biking-in-paris
 
-# 2. Check prerequisites and get setup guidance
+# 2. Download the credential and rename to credentials.json in the root folder 
+
+# 3. Check prerequisites and get setup guidance
 make setup
 
-# 3. Run the complete data pipeline
+# 4. Run the complete data pipeline
+make build 
 make up
 ```
  
@@ -65,32 +74,32 @@ The Google Cloud resources (bucket, BigQuery dataset) are managed by Terraform. 
 Initialize Terraform:
 
 ```bash
-docker-compose run --rm infra init
+docker compose run --rm infra init
 ```
 
 **Workflow for Infrastructure Changes:**
-> Note: As we install the Terraform inside the docker container, so we need to activate the relevant docker by adding `docker-compose run --rm infra`. If you interact with Terrafrom direcly, simply call it `terraform plan`.
+> Note: As we install the Terraform inside the docker container, so we need to activate the relevant docker by adding `docker compose run --rm infra`. If you interact with Terrafrom direcly, simply call it `terraform plan`.
 
 When you need to make changes to your infrastructure:
 
 1. **Edit Configuration:** Modify the Terraform files (e.g., `main.tf`) in the `./infra` directory
-2. **Review the Plan:** `docker-compose run --rm infra terraform plan`
-3. **Apply Changes:**: `docker-compose run --rm infra terraform apply`
-4. **Delete Relevant Resources:**: `docker-compose run --rm infra terraform destroy`
+2. **Review the Plan:** `docker compose run --rm infra terraform plan`
+3. **Apply Changes:**: `docker compose run --rm infra terraform apply`
+4. **Delete Relevant Resources:**: `docker compose run --rm infra terraform destroy`
 
 #### Advanced: Adding Existing Infrastructure to Terraform
 
 If you have already created the infrastructure using Google Cloud but want Terraform to manage it later, you need to let Terraform know that these resources exist. One way is to import them as follows:
 
 ```bash
-docker-compose run --rm infra terraform import "google_storage_bucket.biking-in-paris-bucket" "biking-in-paris-bucket"
-docker-compose run --rm infra terraform import "google_bigquery_dataset.accidents" "projects/biking-in-paris/datasets/accidents"
+docker compose run --rm infra terraform import "google_storage_bucket.biking-in-paris-bucket" "biking-in-paris-bucket"
+docker compose run --rm infra terraform import "google_bigquery_dataset.accidents" "projects/biking-in-paris/datasets/accidents"
 ```
 
-Then, if you use the command `docker-compose run --rm infra terraform state list` to check, you can notice the following output:
+Then, if you use the command `docker compose run --rm infra terraform state list` to check, you can notice the following output:
 
 ```bash
-zoe@Mac infra % docker-compose run --rm infra terraform state list
+zoe@Mac infra % docker compose run --rm infra terraform state list
 google_bigquery_dataset.accidents
 google_storage_bucket.biking-in-paris-bucket
 ```
@@ -130,7 +139,7 @@ To update the data each year when new datasets are released:
 
 3. **Run the following command**:
 
-   * `docker-compose run --rm ingestion`
+   * `docker compose run --rm ingestion`
    * It will only download the newly uploaded data.
 
 ### Data Transformation
@@ -166,7 +175,7 @@ The external tables in `models/src.yml` use wildcard patterns to read across all
 * `gs://biking-in-paris-bucket/data/raw/*/usagers.csv`
 * `gs://biking-in-paris-bucket/data/raw/*/vehicules.csv`
 
-Data flow layers are created as follows.
+Data flow layers are created as follows (following the [STAR schema](https://www.databricks.com/glossary/star-schema)):
 
 1. **Raw Sources** (`src.yml`):
    - `raw_caract_all` → Accident characteristics (when, where, weather)
@@ -202,7 +211,7 @@ Before starting the machine learning phase, let’s first take a look at the dat
 
 ### How to use it
 
-After launching the container (e.g., `make up` or `docker-compose up --build eda`), you can access the `eda.ipynb` notebook at:
+After launching the container (e.g., `make up` or `docker compose up --build eda`), you can access the `eda.ipynb` notebook at:
 
 ```
 http://localhost:8888

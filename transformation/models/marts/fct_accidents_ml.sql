@@ -64,6 +64,8 @@ with selected as (
 
     -- Spatial context
     department,
+    latitude,
+    longitude,
 
     -- Combined risk features
     case 

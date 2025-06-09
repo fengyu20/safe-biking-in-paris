@@ -10,6 +10,13 @@ RUN apt-get update && \
 
 WORKDIR /app
 
+# Copy requirements first for better caching
+COPY packages.yml profiles.yml dbt_project.yml ./
+
+# Install dbt dependencies
+RUN dbt deps --profiles-dir . --project-dir .
+
+# Copy the rest of the files
 COPY . .
 
 COPY scripts/build.sh /usr/local/bin/dbt-build
