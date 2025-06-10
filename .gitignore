@@ -16,6 +16,7 @@ ml_temp/
 temp.md
 past/
 data/
+downloaded_model/
 
 .terraform/
 *.tfstate

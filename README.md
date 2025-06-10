@@ -22,7 +22,8 @@ The project requires Docker and Docker Compose. If you don't have them installed
 3. Download the service account key as JSON
 4. Rename the file to `credentials.json` and place it in the project root.
 
-Please check [this doc](docs/google-cloud-setup.md) for `credentials.json` configuration.
+> [!TIP]
+> Please check [this doc](docs/google-cloud-setup.md) for detailed `credentials.json` configuration.
 
 ### Command
 
@@ -48,11 +49,27 @@ make setup
 make build 
 make up
 ```
+
+## Project Workflow
+
+This project is organized into a series of modules that run sequentially to create a complete data pipeline, from infrastructure provisioning to machine learning analysis. Each module is containerized using Docker for portability and consistency.
+
+The workflow is as follows: `infra` → `ingestion` → `dbt` → `eda` → `ml`.
+
+**Module Descriptions:**
+
+* **`[infra](infra)`**: Provisions all necessary cloud infrastructure using **Terraform**, ensuring a reproducible and version-controlled environment.
+* **`[ingestion](ingestion)`**: Ingests the raw dataset of road accidents from the official French open data portal, data.gouv.fr.
+* **`[dbt](transformation)`**: Transforms and models the raw data using **dbt**. This step includes data cleaning, structuring, and testing to prepare it for analysis.
+* **`[eda](eda)`**: Conducts **Exploratory Data Analysis** (EDA), creating visualizations and summaries to uncover initial insights into accident data.
+* **`[ml](ml)`**: Develops **Machine Learning** models to predict accident severity. This module uses insights from the EDA to perform feature engineering and identify key contributing factors using classfication.
+
+
  
 ## Components Breakdown
 
 > [!NOTE]  
-> Note: The following explanation assumes readers have a general understanding of the relevant tools. Only a high-level explanation of tools will be provided; feel free to check [the blog posts](https://fengyu20.github.io/categories/#data) to learn the basics of tools.
+> Note: The following explanation assumes readers have a general understanding of the relevant data engineering tools. Only a high-level explanation of tools will be provided; feel free to check [the blog posts](https://fengyu20.github.io/categories/#data) to learn the basics of tools.
 
 ### Data Source Explained
 
@@ -60,7 +77,7 @@ The related dataset ([https://www.data.gouv.fr/fr/datasets/bases-de-donnees-annu
 
 ![](/docs/img/table_mapping.png)
 
-The field explanation can be found in this file: [metadata](docs/accidents_metadata_en.md)
+The field explanation (English version) can be found in this file: [metadata](docs/accidents_metadata_en.md). (Original French version can be found in this [pdf](https://www.onisr.securite-routiere.gouv.fr/sites/default/files/2024-10/Description%20des%20bases%20de%20donn%C3%A9es%20annuelles.pdf))
 
 ### Infrastructure as Code: Terraform Integration
 
@@ -200,8 +217,8 @@ Data flow layers are created as follows (following the [STAR schema](https://www
    - `fct_accidents_ml` → **ML-ready** with feature encoding and missing value handling  
    - `fct_bike_accidents_idf` → **Specialized subset** for bike safety analysis in IDF region
 
-
-Errors encountered & tips on using dbt can be found in [this doc](docs/raw_data_cleaning_notes.md)
+> [!NOTE]
+> Errors encountered & tips on using dbt can be found in [this doc](docs/raw_data_cleaning_notes.md).
 
 ### EDA: Exploratory Data Analysis
 
@@ -233,4 +250,10 @@ This module focuses on accident severity prediction and risk analysis for bike a
 The analysis use the dbt-transformed BigQuery table [`fct_bike_accidents_idf`](transformation/models/marts/fct_bike_accidents_idf.sql) that contain cleaned accident data.
 
 
-###  How to use it
+### How to use it
+
+After launching the container (e.g., `make up` or `docker compose up --build ml`), you can access the [`train_bike_severity.ipynb`](ml/train_bike_severity.ipynb) notebook at:
+
+```
+http://localhost:8800
+```

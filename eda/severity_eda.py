@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Literal
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -66,13 +66,14 @@ class SeverityEDA:
         pct = counts / counts.sum() * 100
 
         print("\n=== Severity overview ===")
-        for sev, n in counts.items():
+        for sev in counts.index:
+            n = counts[sev]
             if pd.isna(n):
                 continue
             print(f"{sev:20} | {n:7,.0f} cases | {pct[sev]:5.1f}%")
         print("Total accidents:", int(counts.sum()))
 
-    def analyze(self, column: str, *, kind: str = "bar") -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def analyze(self, column: str, *, kind: Literal["bar", "barh"] = "bar") -> Tuple[pd.DataFrame, pd.DataFrame]:
 
         if self.df is None:
             raise RuntimeError("No data – run set_data() first.")
@@ -86,7 +87,8 @@ class SeverityEDA:
         pct_sorted = self._sort_data_for_plotting(pct)
 
         print(f"\n=== Severity by {column} ===")
-        for idx, row in pct_sorted.iterrows():
+        for idx in pct_sorted.index:
+            row = pct_sorted.loc[idx]
             total = counts.loc[idx].sum()
             print(f"\n{idx} (n={total:,})")
             for sev in self.cfg.order:
@@ -114,7 +116,7 @@ class SeverityEDA:
 
         return pd.concat([known, unknown])
 
-    def _plot(self, data: pd.DataFrame, *, title: str, kind: str, fname: str) -> None:
+    def _plot(self, data: pd.DataFrame, *, title: str, kind: Literal["bar", "barh"], fname: str) -> None:
 
         cols = [c for c in self.cfg.order if c in data.columns]
         data = data[cols]
@@ -126,21 +128,29 @@ class SeverityEDA:
         ax.legend(title="Severity", bbox_to_anchor=(1.02, 1), loc="upper left")
         ax.tick_params(axis="x", rotation=45)
 
-        for container in ax.containers:
-            labels = [
-                f"{val:.1f}%" if val >= 0.5 else ""
-                for val in container.datavalues
-            ]
+        # Only add labels for bar charts, not other plot types
+        if kind == "bar":
+            from matplotlib.container import BarContainer
+            for container in ax.containers:
+                if isinstance(container, BarContainer):
+                    datavalues = getattr(container, 'datavalues', [])
+                    if hasattr(datavalues, '__iter__'):
+                        labels = [
+                            f"{val:.1f}%" if val >= 0.5 else ""
+                            for val in datavalues
+                        ]
+                    else:
+                        labels = []
 
-            ax.bar_label(
-                container,
-                fmt="%.1f%%",
-                labels=labels,
-                label_type="center",  
-                color="white",
-                fontsize=6,
-                fontweight="bold"
-            )
+                    ax.bar_label(
+                        container,
+                        fmt="%.1f%%",
+                        labels=labels,
+                        label_type="center",  
+                        color="white",
+                        fontsize=6,
+                        fontweight="bold"
+                    )
 
         plt.tight_layout()
 

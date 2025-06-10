@@ -10,3 +10,4 @@ jupyterlab>=3.0.0
 ipykernel>=6.0.0
 notebook>=6.0.0
 ipywidgets>=7.0.0
+folium>=0.12.0
