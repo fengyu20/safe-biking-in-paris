@@ -58,14 +58,12 @@ The workflow is as follows: `infra` → `ingestion` → `dbt` → `eda` → `ml`
 
 **Module Descriptions:**
 
-* **`[infra](infra)`**: Provisions all necessary cloud infrastructure using **Terraform**, ensuring a reproducible and version-controlled environment.
-* **`[ingestion](ingestion)`**: Ingests the raw dataset of road accidents from the official French open data portal, data.gouv.fr.
-* **`[dbt](transformation)`**: Transforms and models the raw data using **dbt**. This step includes data cleaning, structuring, and testing to prepare it for analysis.
-* **`[eda](eda)`**: Conducts **Exploratory Data Analysis** (EDA), creating visualizations and summaries to uncover initial insights into accident data.
-* **`[ml](ml)`**: Develops **Machine Learning** models to predict accident severity. This module uses insights from the EDA to perform feature engineering and identify key contributing factors using classfication.
+* **[`infra`](infra)**: Provisions all necessary cloud infrastructure using **Terraform**, ensuring a reproducible and version-controlled environment.
+* **[`ingestion`](ingestion)**: Ingests the raw dataset of road accidents from the official French open data portal, data.gouv.fr.
+* **[`dbt`](transformation)**: Transforms and models the raw data using **dbt**. This step includes data cleaning, structuring, and testing to prepare it for analysis.
+* **[`eda`](eda)**: Conducts **Exploratory Data Analysis** (EDA), creating visualizations and summaries to uncover initial insights into accident data.
+* **[`ml`](ml)**: Develops **Machine Learning** models to predict accident severity. This module uses insights from the EDA to perform feature engineering and identify key contributing factors using classfication.
 
-
- 
 ## Components Breakdown
 
 > [!NOTE]  
@@ -224,7 +222,7 @@ Data flow layers are created as follows (following the [STAR schema](https://www
 
 ### Introduction
 
-Before starting the machine learning phase, let’s first take a look at the dataset.
+Before starting the machine learning phase, let's first take a look at the dataset.
 
 ### How to use it
 
